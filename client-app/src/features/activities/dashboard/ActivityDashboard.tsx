@@ -1,59 +1,34 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Grid } from "semantic-ui-react";
-import { IActivity } from "../../../app/models/activity";
 import ActivityList from "./ActivityList";
 import AcitivityDetails from "../details/AcitivityDetails";
 import ActivityForm from "../form/ActivityForm";
+import ActivityStore from "../../../app/stores/activityStore";
+import { observer } from "mobx-react-lite";
 
-interface Iprops {
-  activities: IActivity[];
-  selectActivity: (id: string) => void;
-  selectedActivity: IActivity | null;
-  editMode: boolean;
-  setEditMode: (editMode: boolean) => void;
-  setSelectedActivity: (activity: IActivity | null) => void;
-  createActivity: (activity: IActivity) => void;
-  editActivity: (activity: IActivity) => void;
-  deleteActivity : (id:string) => void;
-}
 
-export const ActivityDashboard: React.FC<Iprops> = ({
-  activities,
-  selectActivity,
-  selectedActivity,
-  editMode,
-  setEditMode,
-  setSelectedActivity,
-  createActivity,
-  editActivity,
-  deleteActivity
-  
-}) => {
+export const ActivityDashboard: React.FC = () => {
+  const activityStore=useContext(ActivityStore);
+  const {editMode,selectedActivity}=activityStore;
   return (
     <Grid>
       <Grid.Column width={10}>
-        <ActivityList activities={activities} selectActivity={selectActivity} deleteActivity={deleteActivity} />
+        <ActivityList/>
       </Grid.Column>
       <Grid.Column width={6}>
         {selectedActivity && !editMode && (
-          <AcitivityDetails
-            setSelectedActivity={setSelectedActivity}
-            activity={selectedActivity}
-            setEditMode={setEditMode}
-          />
+          <AcitivityDetails/>
         )}
         {editMode && (
           <ActivityForm
-          key={selectedActivity?.id || 0}
-            setEditMode={setEditMode}
+            key={selectedActivity?.id || 0}
             activity={selectedActivity!}
-            createActivity={createActivity}
-            editActivity={editActivity}
+    
           />
         )}
-      </Grid.Column>  
+      </Grid.Column>
     </Grid>
   );
 };
 
-export default ActivityDashboard;
+export default observer(ActivityDashboard);

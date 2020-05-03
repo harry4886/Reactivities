@@ -1,70 +1,32 @@
-import React, { useState, useEffect, Fragment } from "react";
-import axios from "axios";
+import React, { useEffect, Fragment, useContext } from "react";
 import { Container } from "semantic-ui-react";
-import { IActivity } from "../models/activity";
 import { NavBar } from "../../features/nav/NavBar";
 import ActivityDashboard from "../../features/activities/dashboard/ActivityDashboard";
+import LoadingComponent from "./LoadingComponent";
+import ActivityStore from "./../stores/activityStore";
+import {observer} from "mobx-react-lite";
 
 const App = () => {
-  const [activities, setActivities] = useState<IActivity[]>([]);
-  const [selectedActivity, setSelectedActivity] = useState<IActivity | null>(
-    null
-  );
-  const handleSelectAcitivity = (id: String) => {
-    setSelectedActivity(activities.filter((a) => a.id === id)[0]);
-  };
-  const [editMode,setEditMode]=useState(false);
-  const handleOpenCreateForm=()=>{
-    setSelectedActivity(null);
-    setEditMode(true);
-  }
-
-  const handleCreateActivity =(activity : IActivity) => {
-    setActivities([...activities,activity])
-    setEditMode(false);
-  }
+  const activityStore= useContext(ActivityStore)
+ 
 
 
-  const handleEditActivity = (activity :IActivity) =>{
-    setActivities ([...activities.filter(a=>a.id !==activity.id),activity])
-  }
+  
+  useEffect(() => {
+    activityStore.loadActivities();
+  }, [activityStore]);
 
-  const handleDeleteActivity=(id:string)=>
-  {
-    setActivities([...activities.filter(a=> a.id!==id)]);
-  }
+if(activityStore.loadingInitial) return <LoadingComponent content='Loading activities....'/>
 
-  useEffect(() => { 
-    axios
-      .get<IActivity[]>("http://localhost:5000/api/activities")
-      .then((response) => {
-        let activities :IActivity[]  =[];
-        response.data.forEach(activity => {
-          activity.date=activity.date.split('.')[0];
-          activities.push(activity)
-        })
-        setActivities(response.data); 
-      });
-  }, []);
-
-  return (  
+  return (
     <Fragment>
-      <NavBar openCreateForm={handleOpenCreateForm} />
+      <NavBar  />
       <Container style={{ marginTop: "7em" }}>
-        <ActivityDashboard
-          activities={activities}
-          selectActivity={handleSelectAcitivity}
-          selectedActivity={selectedActivity}
-          editMode={editMode}
-          setEditMode={setEditMode}
-          setSelectedActivity={setSelectedActivity}
-          createActivity={handleCreateActivity}
-          editActivity={handleEditActivity}
-          deleteActivity={handleDeleteActivity}
-        />
+        
+        <ActivityDashboard/>
       </Container>
     </Fragment>
   );
 };
 
-export default App;
+export default observer(App );
